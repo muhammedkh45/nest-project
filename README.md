@@ -93,6 +93,36 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 - Website - [https://nestjs.com](https://nestjs.com/)
 - Twitter - [@nestframework](https://twitter.com/nestframework)
 
+## Project Structure and Features
+
+### Repository Pattern
+
+The project uses the repository design pattern to separate the database logic from the business logic.
+
+- `src/DB/Repositories/db.repository.ts`: This is a generic repository with basic CRUD operations.
+- `src/DB/Repositories/user.repository.ts`: This repository extends the `db.repository.ts` and adds user-specific database operations.
+
+### User Authentication and Authorization
+
+- **DTOs and Validation:** The `src/module/user/dto/user.dto.ts` file contains Data Transfer Objects (DTOs) for user-related actions. `class-validator` and `class-transformer` are used to validate the incoming data.
+- **Services:** The `src/module/user/user.service.ts` file contains the business logic for user authentication, including:
+    - `signUp`: Creates a new user.
+    - `logIn`: Logs in a user.
+    - `confirmEmail`: Confirms a user's email address.
+    - `loginWithGmail`: Logs in a user using their Google account.
+    - `forgetPassword`: Sends a password reset link to the user's email.
+    - `resetPassword`: Resets the user's password.
+- **Guards:** The `src/common/guards/authentication.ts` file contains an authentication guard to protect routes.
+- **Pipes:** The project uses pipes for data transformation and validation.
+
+### Security
+
+The `src/utils/Security` directory contains security-related utility functions:
+
+- `Hash.ts`: Uses `bcrypt` to hash and compare passwords.
+- `OTPGenerator.ts`: Generates One-Time Passwords (OTPs).
+- `Token.ts`: Uses `jsonwebtoken` to generate and verify JWTs for authentication and authorization. `uuid` is used to generate unique token IDs.
+
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
