@@ -81,4 +81,10 @@ export class DBRepo<TDocument> {
   ) {
     return await this.model.deleteMany(filter, options);
   }
+  async deleteOne(
+    filter: RootFilterQuery<TDocument>,
+    options?: MongooseBaseQueryOptions<TDocument> | null,
+  ) {
+    return await this.model.deleteOne(filter, options);
+  }
 }

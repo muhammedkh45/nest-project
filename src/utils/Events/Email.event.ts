@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
-import { sendEmail } from "../../services/email.service";
-import { emailTemplate } from "../../services/email.template";
+import { sendEmail } from "../../common/services/email/email.service";
+import { emailTemplate } from "../../common/services/email/email.template";
 
 export const eventEmitter = new EventEmitter();
 eventEmitter.on("sendEmail", (data) => {

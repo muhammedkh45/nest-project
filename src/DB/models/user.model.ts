@@ -11,6 +11,7 @@ import {
   ProviderType,
   RoleType,
 } from 'src/common/enums/user.enums';
+import type { HOtpDocument } from './otp.model';
 
 @Schema({
   timestamps: true,
@@ -67,17 +68,20 @@ export class User {
   changeCredentials: Date;
   @Prop({ type: Boolean })
   confirmed: boolean;
-  @Prop({ type: String, minLength: 6, maxLength: 6 })
-  otp: string;
-  @Prop({
-    type: Date,
-    default: Date.now() + 10 * 60 * 1000,
-  })
-  otpExpires: Date;
+  @Virtual()
+  otp:HOtpDocument
 }
+
+
 
 export const UserSchema = SchemaFactory.createForClass(User);
 export type HUserDocument = HydratedDocument<User>;
+UserSchema.virtual('otp', {
+  ref: 'Otp',
+  localField: '_id',
+  foreignField: 'createdBy',
+})
 export const UserModel = MongooseModule.forFeature([
   { name: User.name, schema: UserSchema },
 ]);
+

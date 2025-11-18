@@ -9,18 +9,18 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ZodValidationPipe } from 'src/common/pipes';
-import { addUserSchema } from './user.validation';
 import {
   AddUserDTO,
   confirmEmailDTO,
   ForgetPasswordDTO,
   LoginUserDTO,
   LoginWithGoogleDTO,
+  OtpDTO,
   ResetPasswordDTO,
 } from './dto/user.dto';
 import type { Request, Response } from 'express';
 import { AuthGuard } from 'src/common/guards/authentication';
+import { Otp } from 'src/DB/models/otp.model';
 @Controller('users')
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 export class UserController {
@@ -30,6 +30,10 @@ export class UserController {
   @Post('/signup')
   singup(@Body() body: AddUserDTO, @Res() res: Response) {
     return this.userService.signUp(body, res);
+  }
+  @Post('/resendOtp')
+  resendOtp(@Body() body: OtpDTO, @Res() res: Response) {
+    return this.userService.resendOtp(body, res);
   }
 
   /*Login Router */

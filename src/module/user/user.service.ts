@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -10,6 +11,7 @@ import {
   ForgetPasswordDTO,
   LoginUserDTO,
   LoginWithGoogleDTO,
+  OtpDTO,
   ResetPasswordDTO,
 } from './dto/user.dto';
 import { UserRepository } from 'src/DB/Repositories/user.repository';
@@ -21,22 +23,31 @@ import { generateOTP } from 'src/utils/Security/OTPGenerator';
 import { eventEmitter } from 'src/utils/Events/Email.event';
 import { v4 as uuidv4 } from 'uuid';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
+import { OtpRepository } from 'src/DB/Repositories/otp.repository';
+import { otpTypeEnum } from 'src/common/enums/otp.enums';
+import { Types } from 'mongoose';
 @Injectable()
 export class UserService {
-  constructor(private readonly userModel: UserRepository) {}
+  constructor(
+    private readonly userModel: UserRepository,
+    private readonly otpModel: OtpRepository,
+  ) {}
+
+  private async sendOtp(id: Types.ObjectId, OtpType: otpTypeEnum) {
+    const OTP = await generateOTP();
+    await this.otpModel.createOneOtp({
+      code: OTP,
+      createdBy: id,
+      type: OtpType,
+    });
+  }
+
   async signUp(body: AddUserDTO, res: Response) {
     try {
       let { fName, lName, email, password, age, gender }: AddUserDTO = body;
       if (await this.userModel.findOne({ email })) {
         throw new HttpException('Email already exists.', HttpStatus.CONFLICT);
       }
-      const OTP = await generateOTP();
-      const hashedOTP = await Hash(OTP, Number(process.env.SALT_ROUNDS));
-      eventEmitter.emit('sendEmail', { email, OTP, subject: 'Confirm Email' });
-      password = await Hash(
-        password as unknown as string,
-        Number(process.env.SALT_ROUNDS),
-      );
       const user = await this.userModel.createOneUser({
         fName,
         lName,
@@ -44,8 +55,8 @@ export class UserService {
         password,
         age,
         gender,
-        otp: hashedOTP,
       });
+      await this.sendOtp(user._id, otpTypeEnum.confirmEmail);
       return res.status(201).json({
         message: 'Created Successfuly.',
         NewUser: { Name: user.userName, email: user.email },
@@ -104,27 +115,30 @@ export class UserService {
   }
   async confirmEmail(body: confirmEmailDTO, res: Response) {
     try {
-      const { email, otp }: confirmEmailDTO = body;
-      const user = await this.userModel.findOne({ email });
+      const { email, code }: confirmEmailDTO = body;
+      const user = await this.userModel.findOne(
+        {
+          email,
+          confirmed: { $exists: false },
+        },
+        undefined,
+        {
+          populate: {
+            path: 'otp',
+          },
+        },
+      );
       if (!user) {
         throw new HttpException('User not found.', 404);
       }
-      if (user.confirmed) {
-        return res.status(200).json({ message: 'Email already verified' });
-      }
-      if (!user.otp || !(await Compare(otp!, user.otp))) {
+      if (!user.otp || !(await Compare(code!, user.otp[0].code))) {
         throw new HttpException('Invalid OTP', 400);
-      }
-      if (
-        user.otpExpires &&
-        user.otpExpires < (Date.now() as unknown as Date)
-      ) {
-        throw new HttpException('OTP expired', 400);
       }
       await this.userModel.updateOne(
         { email: user.email },
-        { isVerified: true, $unset: { otp: '', otpExpires: '' } },
+        { confirmed: true },
       );
+      await this.otpModel.deleteOne({ createdBy: user._id });
       return res.status(200).json({ message: 'Email verified successfully' });
     } catch (error) {
       throw new HttpException(
@@ -192,21 +206,22 @@ export class UserService {
   async forgetPassword(body: ForgetPasswordDTO, res: Response) {
     try {
       const { email }: ForgetPasswordDTO = body;
-      const user = await this.userModel.findOne({ email });
+      const user = await this.userModel.findOne(
+        {
+          email,
+          confirmed: { $exists: false },
+        },
+        undefined,
+        {
+          populate: {
+            path: 'otp',
+          },
+        },
+      );
       if (!user) {
         throw new NotFoundException('User not found.');
       }
-      if (!user.confirmed) {
-        throw new HttpException('Email not confirmed', 403);
-      }
-      const OTP = await generateOTP();
-      const hashedOTP = await Hash(OTP, Number(process.env.SALT_ROUNDS));
-      eventEmitter.emit('forgetPassword', {
-        email,
-        OTP,
-        subject: 'Reset Your Password',
-      });
-      await this.userModel.updateOne({ email }, { otp: hashedOTP });
+      await this.sendOtp(user._id, otpTypeEnum.forgetPassword);
       return res
         .status(200)
         .json({ message: 'OTP have been sent Successfully.' });
@@ -220,14 +235,22 @@ export class UserService {
   async resetPassword(body: ResetPasswordDTO, res: Response) {
     try {
       const { email, otp, password }: ResetPasswordDTO = body;
-      const user = await this.userModel.findOne({
-        email,
-        otp: { $exists: true },
-      });
+      const user = await this.userModel.findOne(
+        {
+          email,
+          confirmed: { $exists: false },
+        },
+        undefined,
+        {
+          populate: {
+            path: 'otp',
+          },
+        },
+      );
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      if (!(await Compare(otp!, user?.otp!))) {
+      if (!(await Compare(otp!, user?.otp[0].code!))) {
         throw new HttpException('Wrong OTP', 403);
       }
       const hashedPassword = await Hash(
@@ -239,6 +262,38 @@ export class UserService {
         { password: hashedPassword, $unset: { otp: '' } },
       );
       return res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+      throw new HttpException(
+        (error as unknown as any).message,
+        (error as unknown as any).statusCode,
+      );
+    }
+  }
+  async resendOtp(body: OtpDTO, res: Response) {
+    try {
+      const { email }: OtpDTO = body;
+      const user = await this.userModel.findOne(
+        {
+          email,
+          confirmed: { $exists: false },
+        },
+        undefined,
+        {
+          populate: {
+            path: 'otp',
+          },
+        },
+      );
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      if ((user.otp as any).length > 0) {
+        throw new BadRequestException('OTP already sent');
+      }
+      await this.sendOtp(user._id, otpTypeEnum.resendOtp);
+      return res
+        .status(200)
+        .json({ message: 'OTP have been sent Successfully.' });
     } catch (error) {
       throw new HttpException(
         (error as unknown as any).message,

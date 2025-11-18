@@ -6,6 +6,7 @@ import {
   IsString,
   IsStrongPassword,
   Length,
+  Matches,
   Min,
   ValidateIf,
 } from 'class-validator';
@@ -55,7 +56,8 @@ export class confirmEmailDTO {
   @IsNotEmpty()
   email: string;
   @IsNotEmpty()
-  otp: string;
+  @Matches(/^[0-9]{6}$/)
+  code: string;
 }
 export class LoginWithGoogleDTO {
   @IsString()
@@ -81,4 +83,11 @@ export class ResetPasswordDTO {
   })
   @IsMatch(['password'])
   cPassword: string;
+}
+
+export class OtpDTO {
+  @IsString()
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
 }
