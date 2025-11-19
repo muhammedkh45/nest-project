@@ -16,21 +16,21 @@ import {
 } from './dto/user.dto';
 import { UserRepository } from 'src/DB/Repositories/user.repository';
 import type { Request, Response } from 'express';
-import { Compare, Hash } from 'src/utils/Security/Hash';
+import { Compare, Hash } from 'src/common/utils/Security/Hash';
 import { ProviderType, RoleType } from 'src/common/enums/user.enums';
-import { generateToken } from 'src/utils/Security/Token';
-import { generateOTP } from 'src/utils/Security/OTPGenerator';
-import { eventEmitter } from 'src/utils/Events/Email.event';
+import { generateOTP } from 'src/common/utils/Security/OTPGenerator';
 import { v4 as uuidv4 } from 'uuid';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { OtpRepository } from 'src/DB/Repositories/otp.repository';
 import { otpTypeEnum } from 'src/common/enums/otp.enums';
 import { Types } from 'mongoose';
+import { TokenService } from 'src/common/services/token.service';
 @Injectable()
 export class UserService {
   constructor(
     private readonly userModel: UserRepository,
     private readonly otpModel: OtpRepository,
+    private readonly TokenService: TokenService,
   ) {}
 
   private async sendOtp(id: Types.ObjectId, OtpType: otpTypeEnum) {
@@ -87,19 +87,24 @@ export class UserService {
         throw new HttpException('Please verify your email before login', 403);
       }
       const tokenId = uuidv4();
-      const accessToken = await generateToken(
+      const accessToken = await this.TokenService.generateToken(
         { id: user._id, email: user.email },
-        user?.role == RoleType.user
-          ? process.env.JWT_USER_SECRET!
-          : process.env.JWT_ADMIN_SECRET!,
-        { expiresIn: '1h', jwtid: tokenId },
-      );
-      const refreshToken = await generateToken(
-        { id: user._id, email: user.email },
-        user?.role == RoleType.user
-          ? process.env.JWT_USER_SECRET_REFRESH!
-          : process.env.JWT_ADMIN_SECRET_REFRESH!,
         {
+          secret:
+            user?.role == RoleType.user
+              ? process.env.JWT_USER_SECRET!
+              : process.env.JWT_ADMIN_SECRET!,
+          expiresIn: '1h',
+          jwtid: tokenId,
+        },
+      );
+      const refreshToken = await this.TokenService.generateToken(
+        { id: user._id, email: user.email },
+        {
+          secret:
+            user?.role == RoleType.user
+              ? process.env.JWT_USER_SECRET_REFRESH!
+              : process.env.JWT_ADMIN_SECRET_REFRESH!,
           jwtid: tokenId,
         },
       );
@@ -177,19 +182,24 @@ export class UserService {
         throw new Error('Please login on system ', { cause: 401 });
       }
       const tokenId = uuidv4();
-      const accessToken = await generateToken(
-        { id: req?.user?._id, email: req?.user?.email },
-        req?.user?.role == RoleType.user
-          ? process.env.JWT_USER_SECRET!
-          : process.env.JWT_ADMIN_SECRET!,
-        { expiresIn: '1h', jwtid: tokenId },
-      );
-      const refreshToken = await generateToken(
-        { id: req?.user?._id, email: req?.user?.email },
-        req?.user?.role == RoleType.user
-          ? process.env.JWT_USER_SECRET_REFRESH!
-          : process.env.JWT_ADMIN_SECRET_REFRESH!,
+      const accessToken = await this.TokenService.generateToken(
+        { id: user._id, email: user.email },
         {
+          secret:
+            user?.role == RoleType.user
+              ? process.env.JWT_USER_SECRET!
+              : process.env.JWT_ADMIN_SECRET!,
+          expiresIn: '1h',
+          jwtid: tokenId,
+        },
+      );
+      const refreshToken = await this.TokenService.generateToken(
+        { id: user._id, email: user.email },
+        {
+          secret:
+            user?.role == RoleType.user
+              ? process.env.JWT_USER_SECRET_REFRESH!
+              : process.env.JWT_ADMIN_SECRET_REFRESH!,
           jwtid: tokenId,
         },
       );

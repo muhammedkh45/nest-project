@@ -1,8 +1,8 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { otpTypeEnum } from 'src/common/enums/otp.enums';
-import { eventEmitter } from 'src/utils/Events/Email.event';
-import { Hash } from 'src/utils/Security/Hash';
+import { eventEmitter } from 'src/common/utils/Events/Email.event';
+import { Hash } from 'src/common/utils/Security/Hash';
 
 @Schema({ timestamps: true })
 export class Otp {

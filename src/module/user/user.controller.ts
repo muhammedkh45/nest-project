@@ -4,6 +4,7 @@ import {
   Post,
   Req,
   Res,
+  SetMetadata,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -19,8 +20,12 @@ import {
   ResetPasswordDTO,
 } from './dto/user.dto';
 import type { Request, Response } from 'express';
-import { AuthGuard } from 'src/common/guards/authentication';
+import { AuthenticationGuard } from 'src/common/guards/authentication/authentication.guard';
 import { Otp } from 'src/DB/models/otp.model';
+import { set } from 'mongoose';
+import { TokenType } from 'src/common/enums/token.enums';
+import { RoleType } from 'src/common/enums/user.enums';
+import { AuthorizationGuard } from 'src/common/guards/authorization/authorization.guard';
 @Controller('users')
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 export class UserController {
@@ -49,8 +54,9 @@ export class UserController {
   }
 
   /*login with Gmail Router */
+  @SetMetadata('tokenType', TokenType.access)
+  @UseGuards(AuthenticationGuard)
   @Post('/login-with-google')
-  @UseGuards(AuthGuard)
   loginWithGmail(
     @Body() body: LoginWithGoogleDTO,
     @Res() res: Response,
@@ -64,7 +70,12 @@ export class UserController {
   forgetPassword(@Body() body: ForgetPasswordDTO, @Res() res: Response) {
     return this.userService.forgetPassword(body, res);
   }
-
+  @SetMetadata('accessRole', [
+    RoleType.admin,
+    RoleType.superAdmin,
+    RoleType.user,
+  ])
+  @UseGuards(AuthorizationGuard)
   /** Reset Password */
   @Post('/reset-password')
   resetPassword(@Body() body: ResetPasswordDTO, @Res() res: Response) {
