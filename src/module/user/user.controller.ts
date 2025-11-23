@@ -5,7 +5,10 @@ import {
   Req,
   Res,
   SetMetadata,
+  UploadedFile,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -26,6 +29,12 @@ import { set } from 'mongoose';
 import { TokenType } from 'src/common/enums/token.enums';
 import { RoleType } from 'src/common/enums/user.enums';
 import { AuthorizationGuard } from 'src/common/guards/authorization/authorization.guard';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { file } from 'zod';
+import multer from 'multer';
+import { multerlocal } from 'src/common/utils/Multer/multer.local';
+import { multerCloud } from 'src/common/utils/Multer/multer.cloud';
+import { fileValidation } from 'src/common/utils/Multer/multer.fileValidation';
 @Controller('users')
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 export class UserController {
@@ -80,5 +89,29 @@ export class UserController {
   @Post('/reset-password')
   resetPassword(@Body() body: ResetPasswordDTO, @Res() res: Response) {
     return this.userService.resetPassword(body, res);
+  }
+
+  @Post('/uplaod')
+  @SetMetadata('accessRole', [RoleType.admin, RoleType.superAdmin])
+  @UseGuards(AuthenticationGuard)
+  @UseInterceptors(
+    FileInterceptor(
+      'attachment',
+      multerCloud({ fileType: fileValidation.image }),
+    ),
+  )
+  uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
+    return this.userService.uploadFile(file, req.user);
+  }
+  @Post('/uplaod-many')
+  @UseInterceptors(
+    FilesInterceptor(
+      'attachment',
+      3,
+      multerlocal({ fileType: ['image/jpeg', 'image/png'] }),
+    ),
+  )
+  uploadFiles(@UploadedFiles() file: Express.Multer.File[]) {
+    console.log(file);
   }
 }

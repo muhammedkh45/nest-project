@@ -3,9 +3,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './module/user/user.module';
-import { PostModule } from './module/post/post.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { BrandModule } from './module/brand/brand.module';
 
 @Module({
   imports: [
@@ -23,7 +23,7 @@ import { Connection } from 'mongoose';
       },
     }),
     UserModule,
-    PostModule,
+    BrandModule,
   ], // add any module here
   controllers: [AppController], // your project controllers
   providers: [AppService], // your project services

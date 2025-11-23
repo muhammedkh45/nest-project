@@ -13,6 +13,9 @@ import {
 } from 'src/common/middleware/authentication.middleware';
 import { TokenType } from 'src/common/enums/token.enums';
 import { AuthenticationGuard } from 'src/common/guards/authentication/authentication.guard';
+import { MulterModule } from '@nestjs/platform-express';
+import multer from 'multer';
+import { Request } from 'express';
 
 @Module({
   imports: [UserModel, OtpModel],

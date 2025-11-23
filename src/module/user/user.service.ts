@@ -25,6 +25,8 @@ import { OtpRepository } from 'src/DB/Repositories/otp.repository';
 import { otpTypeEnum } from 'src/common/enums/otp.enums';
 import { Types } from 'mongoose';
 import { TokenService } from 'src/common/services/token.service';
+import { HUserDocument } from 'src/DB/models/user.model';
+import { S3Service } from 'src/common/services/S3Service/s3.service';
 @Injectable()
 export class UserService {
   constructor(
@@ -310,5 +312,11 @@ export class UserService {
         (error as unknown as any).statusCode,
       );
     }
+  }
+
+  async uploadFile(file: Express.Multer.File, user: HUserDocument) {
+    const s3service = new S3Service();
+    const url = await s3service.uploadFile({ file, path: user._id.toString() });
+    return url;
   }
 }
