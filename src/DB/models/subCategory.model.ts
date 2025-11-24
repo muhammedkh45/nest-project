@@ -8,7 +8,7 @@ import slugify from 'slugify';
   toObject: { virtuals: true },
   strictQuery: true,
 })
-export class Brand {
+export class SubCategory {
   @Prop({
     required: true,
     type: String,
@@ -20,13 +20,6 @@ export class Brand {
   name: string;
   @Prop({
     type: String,
-    minlength: 3,
-    maxlength: 10,
-    trim: true,
-  })
-  slogan: string;
-  @Prop({
-    type: String,
     default: function () {
       return slugify(this.name, { replacement: '-', lower: true, trim: true });
     },
@@ -34,10 +27,11 @@ export class Brand {
   slug: string;
   @Prop({ required: true, type: String })
   image: string;
+  @Prop({ type: String })
+  assetFolderID: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'SubCategory' })
-  subcategory: Types.ObjectId;
-  
+  @Prop({ type: { type: Types.ObjectId, ref: 'Category' } })
+  category: Types.ObjectId;
   
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
@@ -49,12 +43,12 @@ export class Brand {
   restoredAt: Date;
 }
 
-export const BrandSchema = SchemaFactory.createForClass(Brand);
-export type HBrandDocument = HydratedDocument<Brand>;
+export const SubCategorySchema = SchemaFactory.createForClass(SubCategory);
+export type HSubCategoryDocument = HydratedDocument<SubCategory>;
 /* document 'save' middleware: here `this` is the document and has isModified */
-BrandSchema.pre(
+SubCategorySchema.pre(
   'save',
-  function (this: HydratedDocument<Brand>, next: Function) {
+  function (this: HydratedDocument<SubCategory>, next: Function) {
     if (this.isModified('name')) {
       this.slug = slugify(this.name, {
         replacement: '-',
@@ -66,7 +60,7 @@ BrandSchema.pre(
   },
 );
 
-BrandSchema.pre(
+SubCategorySchema.pre(
   ['findOneAndUpdate', 'updateOne'],
   function (this: any, next: Function) {
     const update = this.getUpdate && this.getUpdate();
@@ -87,7 +81,7 @@ BrandSchema.pre(
     next();
   },
 );
-BrandSchema.pre(
+SubCategorySchema.pre(
   ['findOne', 'find', 'findOneAndUpdate'],
   async function (next: Function) {
     const { paranoid, ...rest } = this.getQuery();
@@ -98,11 +92,13 @@ BrandSchema.pre(
     }
   },
 );
-BrandSchema.virtual('products', {
-  ref: 'Product',
+
+SubCategorySchema.virtual('brands', {
+  ref: 'Brand',
   localField: '_id',
-  foreignField: 'brand',
+  foreignField: 'subcategory',
 });
-export const BrandModel = MongooseModule.forFeature([
-  { name: Brand.name, schema: BrandSchema },
+
+export const SubCategoryModel = MongooseModule.forFeature([
+  { name: SubCategory.name, schema: SubCategorySchema },
 ]);

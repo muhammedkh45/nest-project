@@ -8,30 +8,27 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  Validate,
 } from 'class-validator';
 import { Types } from 'mongoose';
 import { AtLeastOne } from 'src/common/decorators/brand.decorators';
+import { IdsMongo } from 'src/common/decorators/category.decorators';
 
-export class CreatedBrandDTO {
+export class CreatedSubCategoryDTO {
   @IsString()
   @MinLength(3)
   @MaxLength(50)
   @IsNotEmpty()
   name: string;
-
-  @IsString()
-  @MinLength(3)
-  @MaxLength(10)
-  @IsNotEmpty()
-  slogan: string;
   @IsMongoId()
-  subcategory: Types.ObjectId;
+  @IsNotEmpty()
+  category: Types.ObjectId;
 }
 
-@AtLeastOne(['name', 'slogan', 'subcategory'])
-export class UpdateBrandDTO extends PartialType(CreatedBrandDTO) {}
+@AtLeastOne(['name', 'category'])
+export class UpdateSubCategoryDTO extends PartialType(CreatedSubCategoryDTO) {}
 
-export class getBrandsDTO {
+export class getSubCategoriesDTO {
   @IsOptional()
   @IsNumber()
   @Type(() => Number)

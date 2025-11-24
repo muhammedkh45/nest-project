@@ -1,7 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import {
-  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -9,10 +8,9 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { Types } from 'mongoose';
 import { AtLeastOne } from 'src/common/decorators/brand.decorators';
 
-export class CreatedBrandDTO {
+export class CreatedCategoryDTO {
   @IsString()
   @MinLength(3)
   @MaxLength(50)
@@ -24,14 +22,12 @@ export class CreatedBrandDTO {
   @MaxLength(10)
   @IsNotEmpty()
   slogan: string;
-  @IsMongoId()
-  subcategory: Types.ObjectId;
 }
 
-@AtLeastOne(['name', 'slogan', 'subcategory'])
-export class UpdateBrandDTO extends PartialType(CreatedBrandDTO) {}
+@AtLeastOne(['name', 'slogan', 'subCategories'])
+export class UpdateCategoryDTO extends PartialType(CreatedCategoryDTO) {}
 
-export class getBrandsDTO {
+export class getCategoriesDTO {
   @IsOptional()
   @IsNumber()
   @Type(() => Number)

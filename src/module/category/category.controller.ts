@@ -12,8 +12,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { BrandService } from './brand.service';
-import { CreatedBrandDTO, getBrandsDTO, UpdateBrandDTO } from './dto/brand.dto';
+import { CategoryService } from './category.service';
+import {
+  CreatedCategoryDTO,
+  getCategoriesDTO,
+  UpdateCategoryDTO,
+} from './dto/category.dto';
 import { TokenType } from 'src/common/enums/token.enums';
 import { RoleType } from 'src/common/enums/user.enums';
 import { Auth } from 'src/common/decorators/auth.decorator';
@@ -25,15 +29,15 @@ import { StoreType } from 'src/common/enums/multer.enum';
 import { fileValidation } from 'src/common/utils/Multer/multer.fileValidation';
 import { Types } from 'mongoose';
 
-@Controller('brands')
-export class BrandController {
-  constructor(private readonly brandService: BrandService) {}
+@Controller('categories')
+export class CategoryController {
+  constructor(private readonly categoryService: CategoryService) {}
   /**
-   *  Create new brand
-   * @param brandDTO
+   *  Create new Category
+   * @param CategoryDTO
    * @param user
    * @param file
-   * @returns new Brand
+   * @returns new Category
    */
   @Auth({
     tokenType: TokenType.access,
@@ -41,7 +45,7 @@ export class BrandController {
   })
   @UseInterceptors(
     FileInterceptor(
-      'BrandLogo',
+      'CategoryLogo',
       multerCloud({
         storeType: StoreType.memory,
         fileType: fileValidation.image,
@@ -49,13 +53,17 @@ export class BrandController {
     ),
   )
   @Post('/create')
-  async createBrand(
-    @Body() brandDTO: CreatedBrandDTO,
+  async createCategory(
+    @Body() CategoryDTO: CreatedCategoryDTO,
     @User() user: HUserDocument,
     @UploadedFile(ParseFilePipe) file: Express.Multer.File,
   ) {
-    const brand = await this.brandService.CreateBrand(brandDTO, user, file);
-    return { message: 'Done', brand };
+    const Category = await this.categoryService.CreateCategory(
+      CategoryDTO,
+      user,
+      file,
+    );
+    return { message: 'Done', Category };
   }
 
   /** */
@@ -65,7 +73,7 @@ export class BrandController {
   })
   @UseInterceptors(
     FileInterceptor(
-      'BrandLogo',
+      'CategoryLogo',
       multerCloud({
         storeType: StoreType.memory,
         fileType: fileValidation.image,
@@ -73,74 +81,74 @@ export class BrandController {
     ),
   )
   @Patch('/update-image/:id')
-  async updateBrandLogo(
+  async updateCategoryLogo(
     @Param() id: Types.ObjectId,
     @UploadedFile(ParseFilePipe) file: Express.Multer.File,
   ) {
-    const brand = await this.brandService.updateBrandLogo(id, file);
-    return { message: 'Done', brand };
+    const Category = await this.categoryService.updateCategoryLogo(id, file);
+    return { message: 'Done', Category };
   }
 
   /**
    *
-   * @param brandDTO
+   * @param CategoryDTO
    * @param user
-   * @returns Brand after update
+   * @returns Category after update
    */
   @Auth({
     tokenType: TokenType.access,
     roles: [RoleType.admin],
   })
   @Patch('/update/:id')
-  async updateBrand(
+  async updateCategory(
     @Param('id') id: Types.ObjectId,
-    @Body() brandDTO: UpdateBrandDTO,
+    @Body() CategoryDTO: UpdateCategoryDTO,
   ) {
-    const brand = await this.brandService.UpdateBrand(brandDTO, id);
-    return { message: 'Done', brand };
+    const Category = await this.categoryService.UpdateCategory(CategoryDTO, id);
+    return { message: 'Done', Category };
   }
 
   /**
-   * Freezes a brand.
-   * @param id The id of the brand to be frozen.
-   * @param user The user that is freezing the brand.
-   * @returns The frozen brand.
+   * Freezes a Category.
+   * @param id The id of the Category to be frozen.
+   * @param user The user that is freezing the Category.
+   * @returns The frozen Category.
    */
   @Auth({
     tokenType: TokenType.access,
     roles: [RoleType.admin, RoleType.user],
   })
-  @Patch('/freeze-brand/:id')
-  async freezeBrand(
+  @Patch('/freeze-Category/:id')
+  async freezeCategory(
     @Param('id') id: Types.ObjectId,
     @User() user: HUserDocument,
   ) {
-    const brand = await this.brandService.freezeBrand(id, user);
-    return { message: 'Done', brand };
+    const Category = await this.categoryService.freezeCategory(id, user);
+    return { message: 'Done', Category };
   }
   /**
-   * Restore/UnFreeze a brand.
-   * @param id The id of the brand to be frozen.
-   * @param user The user that is freezing the brand.
-   * @returns The frozen brand.
+   * Restore/UnFreeze a Category.
+   * @param id The id of the Category to be frozen.
+   * @param user The user that is freezing the Category.
+   * @returns The frozen Category.
    */
   @Auth({
     tokenType: TokenType.access,
     roles: [RoleType.admin, RoleType.user],
   })
-  @Patch('/restore-brand/:id')
-  async restoreBrand(
+  @Patch('/restore-Category/:id')
+  async restoreCategory(
     @Param('id') id: Types.ObjectId,
     @User() user: HUserDocument,
   ) {
-    const brand = await this.brandService.restoreBrand(id);
-    return { message: 'Done', brand };
+    const Category = await this.categoryService.restoreCategory(id);
+    return { message: 'Done', Category };
   }
   /**
-   * Delete a brand.
-   * @param id The id of the brand to be frozen.
-   * @param user The user that is freezing the brand.
-   * @returns The frozen brand.
+   * Delete a Category.
+   * @param id The id of the Category to be frozen.
+   * @param user The user that is freezing the Category.
+   * @returns The frozen Category.
    */
 
   @Auth({
@@ -148,21 +156,21 @@ export class BrandController {
     roles: [RoleType.admin, RoleType.user],
   })
   @Delete(':id')
-  async deleteBrand(
+  async deleteCategory(
     @Param('id') id: Types.ObjectId,
     @User() user: HUserDocument,
   ) {
-    const brand = await this.brandService.deleteBrand(id);
-    return { message: 'Done', brand };
+    const Category = await this.categoryService.deleteCategory(id);
+    return { message: 'Done', Category };
   }
 
   /**
-   * Get all brands.
-   * @returns All brands.
+   * Get all Categories.
+   * @returns All Categories.
    */
-  @Delete('getBrands')
-  async getBrands(@Query() query: getBrandsDTO) {
-    const brands = await this.brandService.getBrands(query);
-    return { message: 'Done', brands };
+  @Delete('getCategories')
+  async getCategories(@Query() query: getCategoriesDTO) {
+    const Categories = await this.categoryService.getCategories(query);
+    return { message: 'Done', Categories };
   }
 }

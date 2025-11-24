@@ -8,23 +8,22 @@ import slugify from 'slugify';
   toObject: { virtuals: true },
   strictQuery: true,
 })
-export class Brand {
+export class Product {
   @Prop({
     required: true,
     type: String,
     minlength: 3,
-    maxlength: 50,
+    maxlength: 250,
     trim: true,
-    unique: true,
   })
   name: string;
   @Prop({
     type: String,
-    minlength: 3,
-    maxlength: 10,
+    minlength: 10,
+    maxlength: 10000,
     trim: true,
   })
-  slogan: string;
+  description: string;
   @Prop({
     type: String,
     default: function () {
@@ -33,14 +32,33 @@ export class Brand {
   })
   slug: string;
   @Prop({ required: true, type: String })
-  image: string;
-
-  @Prop({ type: Types.ObjectId, ref: 'SubCategory' })
-  subcategory: Types.ObjectId;
-  
-  
+  mainImage: string;
+  @Prop([{ required: true, type: String }])
+  subImages: string[];
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
+  @Prop({ required: true, type: Number })
+  price: Number;
+  @Prop({ type: Number, min: 0, max: 100 })
+  discount: number;
+
+  @Prop({ type: Types.ObjectId, ref: 'Brand' })
+  brand: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'SubCategory' })
+  subcategory: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Category' })
+  category: Types.ObjectId;
+
+  @Prop({ type: Number, min: 0 })
+  quantity: number;
+  @Prop({ type: Number, min: 0 })
+  stock: number;
+
+  @Prop({ type: Number })
+  rateNum: number;
+  @Prop({ type: Number })
+  rateAvg: number;
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   deletedBy: Types.ObjectId;
   @Prop({ type: Date })
@@ -49,12 +67,12 @@ export class Brand {
   restoredAt: Date;
 }
 
-export const BrandSchema = SchemaFactory.createForClass(Brand);
-export type HBrandDocument = HydratedDocument<Brand>;
+export const ProductSchema = SchemaFactory.createForClass(Product);
+export type HProductDocument = HydratedDocument<Product>;
 /* document 'save' middleware: here `this` is the document and has isModified */
-BrandSchema.pre(
+ProductSchema.pre(
   'save',
-  function (this: HydratedDocument<Brand>, next: Function) {
+  function (this: HydratedDocument<Product>, next: Function) {
     if (this.isModified('name')) {
       this.slug = slugify(this.name, {
         replacement: '-',
@@ -66,7 +84,7 @@ BrandSchema.pre(
   },
 );
 
-BrandSchema.pre(
+ProductSchema.pre(
   ['findOneAndUpdate', 'updateOne'],
   function (this: any, next: Function) {
     const update = this.getUpdate && this.getUpdate();
@@ -87,7 +105,7 @@ BrandSchema.pre(
     next();
   },
 );
-BrandSchema.pre(
+ProductSchema.pre(
   ['findOne', 'find', 'findOneAndUpdate'],
   async function (next: Function) {
     const { paranoid, ...rest } = this.getQuery();
@@ -98,11 +116,7 @@ BrandSchema.pre(
     }
   },
 );
-BrandSchema.virtual('products', {
-  ref: 'Product',
-  localField: '_id',
-  foreignField: 'brand',
-});
-export const BrandModel = MongooseModule.forFeature([
-  { name: Brand.name, schema: BrandSchema },
+
+export const ProductModel = MongooseModule.forFeature([
+  { name: Product.name, schema: ProductSchema },
 ]);

@@ -8,7 +8,7 @@ import slugify from 'slugify';
   toObject: { virtuals: true },
   strictQuery: true,
 })
-export class Brand {
+export class Category {
   @Prop({
     required: true,
     type: String,
@@ -34,11 +34,8 @@ export class Brand {
   slug: string;
   @Prop({ required: true, type: String })
   image: string;
-
-  @Prop({ type: Types.ObjectId, ref: 'SubCategory' })
-  subcategory: Types.ObjectId;
-  
-  
+  @Prop({ type: String })
+  assetFolderID: string;
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
@@ -49,12 +46,12 @@ export class Brand {
   restoredAt: Date;
 }
 
-export const BrandSchema = SchemaFactory.createForClass(Brand);
-export type HBrandDocument = HydratedDocument<Brand>;
+export const CategorySchema = SchemaFactory.createForClass(Category);
+export type HCategoryDocument = HydratedDocument<Category>;
 /* document 'save' middleware: here `this` is the document and has isModified */
-BrandSchema.pre(
+CategorySchema.pre(
   'save',
-  function (this: HydratedDocument<Brand>, next: Function) {
+  function (this: HydratedDocument<Category>, next: Function) {
     if (this.isModified('name')) {
       this.slug = slugify(this.name, {
         replacement: '-',
@@ -66,7 +63,7 @@ BrandSchema.pre(
   },
 );
 
-BrandSchema.pre(
+CategorySchema.pre(
   ['findOneAndUpdate', 'updateOne'],
   function (this: any, next: Function) {
     const update = this.getUpdate && this.getUpdate();
@@ -87,7 +84,7 @@ BrandSchema.pre(
     next();
   },
 );
-BrandSchema.pre(
+CategorySchema.pre(
   ['findOne', 'find', 'findOneAndUpdate'],
   async function (next: Function) {
     const { paranoid, ...rest } = this.getQuery();
@@ -96,13 +93,16 @@ BrandSchema.pre(
     } else {
       this.setQuery({ ...rest, deletedAt: { $exists: false } });
     }
+    next();
   },
 );
-BrandSchema.virtual('products', {
-  ref: 'Product',
+
+CategorySchema.virtual('subcategories', {
+  ref: 'SubCategory',
   localField: '_id',
-  foreignField: 'brand',
+  foreignField: 'category',
 });
-export const BrandModel = MongooseModule.forFeature([
-  { name: Brand.name, schema: BrandSchema },
+
+export const CategoryModel = MongooseModule.forFeature([
+  { name: Category.name, schema: CategorySchema },
 ]);

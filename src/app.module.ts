@@ -6,6 +6,9 @@ import { UserModule } from './module/user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { BrandModule } from './module/brand/brand.module';
+import { CategoryModule } from './module/category/category.module';
+import { SubCategoryModule } from './module/subCategory/subCategory.module';
+import { ProductModule } from './module/product/product.module';
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { BrandModule } from './module/brand/brand.module';
     }),
     UserModule,
     BrandModule,
+    CategoryModule,
+    SubCategoryModule,
+    ProductModule,
   ], // add any module here
   controllers: [AppController], // your project controllers
   providers: [AppService], // your project services
