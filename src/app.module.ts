@@ -10,6 +10,7 @@ import { CategoryModule } from './module/category/category.module';
 import { SubCategoryModule } from './module/subCategory/subCategory.module';
 import { ProductModule } from './module/product/product.module';
 import { CartModule } from './module/Cart/cart.module';
+import { CouponModule } from './module/Coupon/coupon.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CartModule } from './module/Cart/cart.module';
     SubCategoryModule,
     ProductModule,
     CartModule,
+    CouponModule,
   ], // add any module here
   controllers: [AppController], // your project controllers
   providers: [AppService], // your project services

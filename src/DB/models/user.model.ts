@@ -5,7 +5,7 @@ import {
   SchemaFactory,
   Virtual,
 } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import {
   GenderType,
   ProviderType,
@@ -69,10 +69,11 @@ export class User {
   @Prop({ type: Boolean })
   confirmed: boolean;
   @Virtual()
-  otp:HOtpDocument
+  otp: HOtpDocument;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }] })
+  wishlist: Types.ObjectId[];
 }
-
-
 
 export const UserSchema = SchemaFactory.createForClass(User);
 export type HUserDocument = HydratedDocument<User>;
@@ -80,8 +81,7 @@ UserSchema.virtual('otp', {
   ref: 'Otp',
   localField: '_id',
   foreignField: 'createdBy',
-})
+});
 export const UserModel = MongooseModule.forFeature([
   { name: User.name, schema: UserSchema },
 ]);
-

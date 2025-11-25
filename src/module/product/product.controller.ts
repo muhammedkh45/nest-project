@@ -116,4 +116,16 @@ export class ProductController {
     );
     return { message: 'Done', product };
   }
+
+  @Post('/add-remove-to-from-wishlist/:id')
+  async add_Remove_To_From_Wishlist(
+    @Param() id: Types.ObjectId,
+    @User() user: HUserDocument,
+  ) {
+    const response = await this.productService.add_Remove_To_From_Wishlist(
+      id,
+      user,
+    );
+    return response;
+  }
 }

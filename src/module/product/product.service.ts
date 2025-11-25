@@ -5,17 +5,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ProductRepository } from 'src/DB/Repositories/product.repository';
-import {
-  CreatedProductDTO,
-  getProductsDTO,
-  UpdateProductDTO,
-} from './dto/product.dto';
+import { CreatedProductDTO, UpdateProductDTO } from './dto/product.dto';
 import { HUserDocument } from 'src/DB/models/user.model';
 import { S3Service } from 'src/common/services/S3Service/s3.service';
 import { Types } from 'mongoose';
 import { SubCategoryRepository } from 'src/DB/Repositories/subCategory.repository';
 import { CategoryRepository } from 'src/DB/Repositories/category.repository';
 import { BrandRepository } from 'src/DB/Repositories/brand.repository';
+import { UserRepository } from 'src/DB/Repositories/user.repository';
 
 @Injectable()
 export class ProductService {
@@ -24,6 +21,7 @@ export class ProductService {
     private readonly subCategoryModel: SubCategoryRepository,
     private readonly CategoryModel: CategoryRepository,
     private readonly brandModel: BrandRepository,
+    private readonly userModel: UserRepository,
     private s3service: S3Service,
   ) {}
 
@@ -217,5 +215,44 @@ export class ProductService {
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
+  }
+
+  // services/wishlist.service.js
+
+  async add_Remove_To_From_Wishlist(
+    productId: Types.ObjectId,
+    user: HUserDocument,
+  ) {
+    const product = await this.Productmodel.findById(productId);
+    if (!product) throw new NotFoundException('Product not found');
+    let updatedUser;
+    updatedUser = await this.userModel.findOneAndUpdate(
+      {
+        _id: user._id,
+        wishlist: { $ne: productId },
+      },
+      {
+        $addToSet: { wishlist: productId },
+      },
+      { new: true, populate: 'wishlist' },
+    );
+
+    if (updatedUser) {
+      return {
+        action: 'added',
+        wishlist: updatedUser.wishlist,
+      };
+    }
+
+    updatedUser = await this.userModel.findOneAndUpdate(
+      { _id: user._id },
+      { $pull: { wishlist: productId } },
+      { new: true, populate: 'wishlist' },
+    );
+
+    return {
+      action: 'removed',
+      wishlist: updatedUser.wishlist,
+    };
   }
 }
