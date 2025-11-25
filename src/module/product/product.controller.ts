@@ -1,33 +1,21 @@
 import {
   Body,
   Controller,
-  Delete,
   Param,
   ParseFilePipe,
   Patch,
   Post,
-  Query,
-  SetMetadata,
-  UploadedFile,
   UploadedFiles,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
-import {
-  CreatedProductDTO,
-  getProductsDTO,
-  UpdateProductDTO,
-} from './dto/product.dto';
+import { CreatedProductDTO, UpdateProductDTO } from './dto/product.dto';
 import { TokenType } from 'src/common/enums/token.enums';
 import { RoleType } from 'src/common/enums/user.enums';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { User } from 'src/common/decorators';
 import type { HUserDocument } from 'src/DB/models/user.model';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-} from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerCloud } from 'src/common/utils/Multer/multer.cloud';
 import { StoreType } from 'src/common/enums/multer.enum';
 import { fileValidation } from 'src/common/utils/Multer/multer.fileValidation';
@@ -73,6 +61,58 @@ export class ProductController {
       productDTO,
       user,
       files,
+    );
+    return { message: 'Done', product };
+  }
+
+  @Auth({
+    tokenType: TokenType.access,
+    roles: [RoleType.admin],
+  })
+  @Patch('/update/:id')
+  async UpdateProduct(
+    @Body() productDTO: UpdateProductDTO,
+    @Param() id: Types.ObjectId,
+    @User() user: HUserDocument,
+  ) {
+    const product = await this.productService.updateProduct(
+      id,
+      productDTO,
+      user,
+    );
+    return { message: 'Done', product };
+  }
+
+  @Auth({
+    tokenType: TokenType.access,
+    roles: [RoleType.admin],
+  })
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'mainImage', maxCount: 1 },
+        {
+          name: 'subImages',
+          maxCount: 10,
+        },
+      ],
+      multerCloud({
+        storeType: StoreType.memory,
+        fileType: fileValidation.image,
+      }),
+    ),
+  )
+  @Patch('/update/images/:id')
+  async updateProductImages(
+    @Param() id: Types.ObjectId,
+    @User() user: HUserDocument,
+    @UploadedFiles(ParseFilePipe)
+    files: { mainImage: Express.Multer.File; subImages: Express.Multer.File[] },
+  ) {
+    const product = await this.productService.updateProductImages(
+      id,
+      files,
+      user,
     );
     return { message: 'Done', product };
   }

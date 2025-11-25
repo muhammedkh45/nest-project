@@ -9,6 +9,7 @@ import { BrandModule } from './module/brand/brand.module';
 import { CategoryModule } from './module/category/category.module';
 import { SubCategoryModule } from './module/subCategory/subCategory.module';
 import { ProductModule } from './module/product/product.module';
+import { CartModule } from './module/Cart/cart.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ProductModule } from './module/product/product.module';
     CategoryModule,
     SubCategoryModule,
     ProductModule,
+    CartModule,
   ], // add any module here
   controllers: [AppController], // your project controllers
   providers: [AppService], // your project services

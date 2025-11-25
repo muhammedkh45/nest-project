@@ -1,4 +1,16 @@
-import { DeleteResult, HydratedDocument, Model, MongooseBaseQueryOptions, MongooseUpdateQueryOptions, ProjectionType, QueryOptions, RootFilterQuery, UpdateQuery, UpdateWriteOpResult } from "mongoose";
+import {
+  DeleteResult,
+  HydratedDocument,
+  Model,
+  MongooseBaseQueryOptions,
+  MongooseUpdateQueryOptions,
+  ProjectionType,
+  QueryOptions,
+  RootFilterQuery,
+  UpdateQuery,
+  UpdateWriteOpResult,
+  Types,
+} from 'mongoose';
 
 export class DBRepo<TDocument> {
   constructor(protected readonly model: Model<TDocument>) {}
@@ -11,6 +23,26 @@ export class DBRepo<TDocument> {
     options?: QueryOptions<TDocument>,
   ): Promise<HydratedDocument<TDocument> | null> {
     return this.model.findOne(filter, select, options);
+  }
+
+  /**
+   * Find a document by its id.
+   */
+  async findById(
+    id: string | Types.ObjectId,
+    select?: ProjectionType<TDocument>,
+    options?: QueryOptions<TDocument>,
+  ): Promise<HydratedDocument<TDocument> | null> {
+    return this.model.findById(id as any, select, options);
+  }
+
+  /**
+   * Check if a document exists matching the provided filter.
+   * Returns `true` if a matching document exists, otherwise `false`.
+   */
+  async exists(filter: RootFilterQuery<TDocument>): Promise<boolean> {
+    const res = await this.model.exists(filter as any);
+    return !!res;
   }
   async find({
     filter,

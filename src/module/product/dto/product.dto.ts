@@ -56,14 +56,14 @@ export class CreatedProductDTO {
 
 @AtLeastOne([
   'name',
-  'slogan',
+  'description',
   'subcategory',
   'category',
   'brand',
   'price',
   'discount',
-  'rateNum',
-  'rateAvg',
+  'quantity',
+  'stock',
 ])
 export class UpdateProductDTO extends PartialType(CreatedProductDTO) {}
 

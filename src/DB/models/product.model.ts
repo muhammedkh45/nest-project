@@ -38,7 +38,7 @@ export class Product {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
   @Prop({ required: true, type: Number })
-  price: Number;
+  price: number;
   @Prop({ type: Number, min: 0, max: 100 })
   discount: number;
 
@@ -59,6 +59,8 @@ export class Product {
   @Prop({ type: Number })
   rateAvg: number;
 
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  updatedBy: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   deletedBy: Types.ObjectId;
   @Prop({ type: Date })
