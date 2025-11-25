@@ -10,9 +10,11 @@ import { BrandModel } from 'src/DB/models/brand.model';
 import { S3Service } from 'src/common/services/S3Service/s3.service';
 import { SubCategoryModel } from 'src/DB/models/subCategory.model';
 import { SubCategoryRepository } from 'src/DB/Repositories/subCategory.repository';
+import { ProductRepository } from 'src/DB/Repositories/product.repository';
+import { ProductModel } from 'src/DB/models/product.model';
 
 @Module({
-  imports: [UserModel, BrandModel, SubCategoryModel],
+  imports: [UserModel, BrandModel, SubCategoryModel, ProductModel],
   controllers: [BrandController],
   providers: [
     BrandService,
@@ -21,6 +23,7 @@ import { SubCategoryRepository } from 'src/DB/Repositories/subCategory.repositor
     UserRepository,
     BrandRepository,
     SubCategoryRepository,
+    ProductRepository,
     S3Service,
   ],
   exports: [],

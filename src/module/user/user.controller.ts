@@ -36,7 +36,7 @@ import { multerlocal } from 'src/common/utils/Multer/multer.local';
 import { multerCloud } from 'src/common/utils/Multer/multer.cloud';
 import { fileValidation } from 'src/common/utils/Multer/multer.fileValidation';
 @Controller('users')
-@UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+// @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

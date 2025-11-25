@@ -50,6 +50,7 @@ export class UserService {
       if (await this.userModel.findOne({ email })) {
         throw new HttpException('Email already exists.', HttpStatus.CONFLICT);
       }
+      password = await Hash(password, Number(process.env.SALT_ROUNDS));
       const user = await this.userModel.createOneUser({
         fName,
         lName,

@@ -11,9 +11,19 @@ import { S3Service } from 'src/common/services/S3Service/s3.service';
 import ca from 'zod/v4/locales/ca.js';
 import { CategoryModel } from 'src/DB/models/category.model';
 import { CategoryRepository } from 'src/DB/Repositories/category.repository';
+import { SubCategoryRepository } from 'src/DB/Repositories/subCategory.repository';
+import { SubCategoryModel } from 'src/DB/models/subCategory.model';
+import { ProductModel } from 'src/DB/models/product.model';
+import { ProductRepository } from 'src/DB/Repositories/product.repository';
 
 @Module({
-  imports: [UserModel, BrandModel, CategoryModel],
+  imports: [
+    UserModel,
+    BrandModel,
+    CategoryModel,
+    SubCategoryModel,
+    ProductModel,
+  ],
   controllers: [CategoryController],
   providers: [
     CategoryService,
@@ -22,7 +32,9 @@ import { CategoryRepository } from 'src/DB/Repositories/category.repository';
     UserRepository,
     BrandRepository,
     CategoryRepository,
+    SubCategoryRepository,
     S3Service,
+    ProductRepository,
   ],
   exports: [],
 })

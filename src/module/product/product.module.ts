@@ -12,9 +12,17 @@ import { SubCategoryModel } from 'src/DB/models/subCategory.model';
 import { SubCategoryRepository } from 'src/DB/Repositories/subCategory.repository';
 import { ProductRepository } from 'src/DB/Repositories/product.repository';
 import { ProductModel } from 'src/DB/models/product.model';
+import { CategoryRepository } from 'src/DB/Repositories/category.repository';
+import { CategoryModel } from 'src/DB/models/category.model';
 
 @Module({
-  imports: [UserModel, BrandModel, SubCategoryModel, ProductModel],
+  imports: [
+    UserModel,
+    BrandModel,
+    SubCategoryModel,
+    ProductModel,
+    CategoryModel,
+  ],
   controllers: [ProductController],
   providers: [
     ProductService,
@@ -25,6 +33,7 @@ import { ProductModel } from 'src/DB/models/product.model';
     ProductRepository,
     SubCategoryRepository,
     S3Service,
+    CategoryRepository,
   ],
   exports: [],
 })
