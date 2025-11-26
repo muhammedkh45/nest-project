@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Param,
-  ParseFilePipe,
-  Patch,
-  Post,
-  UploadedFiles,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Patch, Post } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { CreatedCartDTO, UpdateCartDTO } from './dto/cart.dto';
 import { TokenType } from 'src/common/enums/token.enums';
@@ -15,10 +6,6 @@ import { RoleType } from 'src/common/enums/user.enums';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { User } from 'src/common/decorators';
 import type { HUserDocument } from 'src/DB/models/user.model';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { multerCloud } from 'src/common/utils/Multer/multer.cloud';
-import { StoreType } from 'src/common/enums/multer.enum';
-import { fileValidation } from 'src/common/utils/Multer/multer.fileValidation';
 import { Types } from 'mongoose';
 
 @Controller('carts')
